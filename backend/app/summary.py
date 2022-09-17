@@ -1,6 +1,7 @@
 import configparser
 import json
 import struct
+import subprocess
 from collections import defaultdict
 
 import gi
@@ -13,7 +14,7 @@ from . import config, db
 
 
 # "valid" here means it would be displayed on flathub.org
-def validate_ref(ref: str, enforce_arch=True):
+def validate_ref(ref: str):
     if not ref.startswith("app/"):
         return False
 
@@ -23,7 +24,7 @@ def validate_ref(ref: str, enforce_arch=True):
 
     kind, appid, arch, branch = fields
 
-    if enforce_arch and arch != "x86_64":
+    if arch not in ("x86_64", "aarch64"):
         return False
 
     if branch != "stable":
@@ -141,19 +142,28 @@ def update():
         if "extra-data" in summary_dict[appid]["metadata"]:
             summary_dict[appid]["installed_size"] += download_size
 
-    for ref in xa_cache.keys():
-        if not validate_ref(ref, enforce_arch=False):
-            continue
+    # The main summary file contains only x86_64 refs due to ostree file size
+    # limitations. Since 2020, aarch64 is the only additional arch supported,
+    # so we need to enrich the data by parsing the output of "flatpak
+    # remote-ls", as ostree itself does not expose "sub-sumarries".
+    command = [
+        "flatpak",
+        "remote-ls",
+        "--user",
+        "--arch=*",
+        "--columns=ref",
+        "flathub",
+    ]
+    remote_refs_ret = subprocess.run(command, capture_output=True, text=True)
+    if remote_refs_ret.returncode == 0:
+        for ref in remote_refs_ret.stdout.splitlines():
+            if not validate_ref(ref):
+                continue
 
-        appid = ref.split("/")[1]
-        arch = ref.split("/")[2]
+            appid = ref.split("/")[1]
+            arch = ref.split("/")[2]
 
-        # Flathub still distributes old i386 and armhf builds but they are
-        # no longer maintained, so don't show them on the website
-        if arch not in ("x86_64", "aarch64"):
-            continue
-
-        summary_dict[appid]["arches"].append(arch)
+            summary_dict[appid]["arches"].append(arch)
 
     if recently_updated_zset:
         db.redis_conn.zadd("recently_updated_zset", recently_updated_zset)

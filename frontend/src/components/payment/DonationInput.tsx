@@ -42,7 +42,7 @@ const DonationInput: FunctionComponent<Props> = ({ org }) => {
   }, [transaction])
 
   if (submit) {
-    return <Spinner size="s" />
+    return <Spinner size="l" />
   }
 
   const presets = [5, 10, 15, 20].map((val) => {
@@ -68,7 +68,11 @@ const DonationInput: FunctionComponent<Props> = ({ org }) => {
         {presets}
 
         <div>
-          <Currency.Input inputValue={amount} setValue={setAmount} />
+          <Currency.Input
+            inputValue={amount}
+            setValue={setAmount}
+            maximum={STRIPE_MAX_PAYMENT}
+          />
           <Currency.MinMaxError
             value={amount}
             minimum={FLATHUB_MIN_PAYMENT}

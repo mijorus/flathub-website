@@ -7,34 +7,46 @@ import Button from "../../../Button"
 
 interface Props {
   app: Appstream
+  updateCallback: CallableFunction
 }
 
 /**
  * The button to open a model dialog where application ownership tokens can be generated.
  */
-const TokenCreateDialog: FunctionComponent<Props> = ({ app }) => {
+const TokenCreateDialog: FunctionComponent<Props> = ({
+  app,
+  updateCallback,
+}) => {
   const { t } = useTranslation()
 
   const [shown, setShown] = useState(false)
   const [text, setText] = useState("")
 
   const textUpdate = useCallback((event) => setText(event.target.value), [])
-  const onSubmit = useCallback(() => {
+  const onSubmit = useCallback(async () => {
     setShown(false)
 
     // Strip leading and trailing whitespace characters
     const names = text.split(/\s*\n\s*/).filter((name) => name !== "")
 
     if (names.length > 0) {
-      createVendingTokens(app.id, names)
+      await createVendingTokens(app.id, names)
+      updateCallback()
+      setText("")
     }
-  }, [app.id, text])
+  }, [app.id, text, updateCallback])
 
   return (
     <>
       <Button onClick={() => setShown(true)}>{t("create-tokens")}</Button>
       <Transition appear show={shown} as={Fragment}>
-        <Dialog as="div" onClose={() => setShown(false)}>
+        <Dialog
+          as="div"
+          onClose={() => {
+            setShown(false)
+            setText("")
+          }}
+        >
           <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
 
           <div className="fixed inset-0 flex items-center justify-center p-4">

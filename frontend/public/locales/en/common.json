@@ -143,7 +143,7 @@
   "languages-description": "Select a language to switch to it:",
   "switch-language": "Switch Language",
   "actions": "Actions",
-  "expiry": "Expiry:",
+  "expiry": "Expiry",
   "checkout": "Checkout",
   "confirm-selection": "Confirm Selection",
   "created": "Created",
@@ -206,7 +206,6 @@
   "requires-attention": "Requires attention",
   "cancel": "Cancel",
   "delete": "Delete",
-  "go-to-page": "Go to {{page}}",
   "account-deletion-token-mismatch": "The account deletion request failed to authenticate.",
   "privacy-policy": "Privacy Policy",
   "privacy-policy-description": "By using this website, you agree to the Privacy Policy.",
@@ -249,5 +248,7 @@
   "token-redeem-placeholder": "Enter an ownership token",
   "open-menu": "Open Menu",
   "open-user-menu": "Open User Menu",
-  "your-profile": "Your Profile"
+  "your-profile": "Your Profile",
+  "show-more": "Show More",
+  "show-less": "Show Less"
 }

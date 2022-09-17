@@ -47,6 +47,8 @@ def generate_text(frontend_url="beta.flathub.org"):
         "et",
         "ca",
         "el",
+        "ta",
+        "fa",
     ]
 
     applications = [f"/apps/details/{appid}" for appid in apps.list_appstream()]
@@ -68,6 +70,7 @@ def generate_text(frontend_url="beta.flathub.org"):
             for page in pages + applications + projectgroups + developers + categories
         )
     )
+    sitemap += "\n"
 
     for language in languages:
         sitemap += "\n".join(
@@ -80,6 +83,7 @@ def generate_text(frontend_url="beta.flathub.org"):
                 + categories
             )
         )
+        sitemap += "\n"
 
     db.redis_conn.setex(redis_key, 60 * 60 * 24, sitemap)
     return sitemap

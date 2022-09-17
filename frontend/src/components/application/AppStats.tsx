@@ -24,6 +24,11 @@ const AppStatistics: FunctionComponent<Props> = ({ stats }) => {
     }
   }
 
+  // only show graph, if we have more then ten days of data
+  if (Object.keys(stats.installs_per_day).length < 10) {
+    return null
+  }
+
   // Remove current day
   installs_labels.pop()
   installs_data.pop()

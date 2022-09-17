@@ -1,5 +1,5 @@
 import { Elements } from "@stripe/react-stripe-js"
-import { loadStripe, Stripe } from "@stripe/stripe-js"
+import { loadStripe, Stripe, StripeElementsOptions } from "@stripe/stripe-js"
 import { GetStaticPaths, GetStaticProps } from "next"
 import { useTranslation } from "next-i18next"
 import { serverSideTranslations } from "next-i18next/serverSideTranslations"
@@ -8,7 +8,7 @@ import { useRouter } from "next/router"
 import { ReactElement, useEffect, useState } from "react"
 import LoginGuard from "../../src/components/login/LoginGuard"
 import Checkout from "../../src/components/payment/checkout/Checkout"
-import RelatedLink from "../../src/components/RelatedLink"
+import Breadcrumbs from "../../src/components/Breadcrumbs"
 import Spinner from "../../src/components/Spinner"
 import { useUserContext } from "../../src/context/user-info"
 import {
@@ -17,6 +17,7 @@ import {
   TRANSACTION_STRIPE_INFO_URL,
 } from "../../src/env"
 import { TransactionDetailed } from "../../src/types/Payment"
+import { useTheme } from "next-themes"
 
 // Memoized Stripe object retrieval so it's only retrieved on demand
 let stripePromise: Promise<Stripe>
@@ -113,6 +114,8 @@ export default function TransactionPage() {
       .catch(setError)
   }, [router, user])
 
+  const { resolvedTheme } = useTheme()
+
   let content: ReactElement
   if (error) {
     content = (
@@ -122,7 +125,10 @@ export default function TransactionPage() {
       </>
     )
   } else if (secret) {
-    const options = { clientSecret: secret }
+    const options: StripeElementsOptions = {
+      clientSecret: secret,
+      appearance: { theme: resolvedTheme === "dark" ? "night" : "stripe" },
+    }
 
     content = (
       <Elements stripe={stripe} options={options}>
@@ -133,12 +139,25 @@ export default function TransactionPage() {
     content = <Spinner size="l" />
   }
 
+  const pages = [
+    {
+      href: "/wallet",
+      name: t("user-wallet"),
+      current: false,
+    },
+    {
+      href: `/payment/${router.query.transaction_id}`,
+      name: t("payment"),
+      current: true,
+    },
+  ]
+
   return (
     <>
       <NextSeo title={t("payment")} noindex={true}></NextSeo>
-      <div className="max-w-11/12 my-0 mx-auto w-11/12 2xl:w-[1400px] 2xl:max-w-[1400px]">
+      <div className="max-w-11/12 my-0 mx-auto w-11/12 pt-4 2xl:w-[1400px] 2xl:max-w-[1400px]">
         <LoginGuard>
-          <RelatedLink href="/wallet" pageTitle={t("user-wallet")} />
+          <Breadcrumbs pages={pages} />
           {content}
         </LoginGuard>
       </div>
